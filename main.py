@@ -32,9 +32,10 @@ class Cliente:
         self.nit = nit
 
 class Compra:
-    def __init__(self, cliente, autos):
+    def __init__(self, cliente, autos, total_seguro):
         self.cliente = cliente
         self.autos = autos
+        self.total_seguro = total_seguro
 
 def mostrar_titulo():
     # Crear un título con pyfiglet
@@ -74,11 +75,18 @@ def registrar_auto():
     marca = input("Ingrese la marca del auto: ")
     modelo = input("Ingrese el modelo del auto: ")
     descripcion = input("Ingrese la descripción del auto: ")
-    precio_unitario = float(input("Ingrese el precio unitario del auto: "))
+    
+    while True:
+        try:
+            precio_unitario = float(input("Ingrese el precio unitario del auto (puede incluir decimales): "))
+            break
+        except ValueError:
+            console.print("[red]⚠️ Entrada no válida. Por favor, ingrese un número decimal para el precio.[/red]")
     
     auto = Auto(placa, marca, modelo, descripcion, precio_unitario)
     autos_registrados.append(auto)
     console.print("[green]Auto registrado exitosamente![/green]")
+
 
 def registrar_cliente():
     console.print("[cyan]Registrar Cliente[/cyan]")
@@ -100,6 +108,8 @@ def registrar_cliente():
     cliente = Cliente(nombre, correo_electronico, nit)
     clientes_registrados.append(cliente)
     console.print("[green]Cliente registrado exitosamente![/green]")
+
+
 
 def realizar_compra():
     console.print("[cyan]Realizar Compra[/cyan]")
@@ -141,11 +151,14 @@ def realizar_compra():
             seguro = input("¿Desea agregar seguro a los autos comprados? (SI/NO): ").strip().lower()
             total = sum(auto.precio_unitario for auto in autos_seleccionados)
             if seguro == 'si':
-                total += total * 0.15
+                total_seguro = total * 0.15
+                total += total_seguro
+            else:
+                total_seguro = 0
             
-            compra = Compra(cliente, autos_seleccionados)
+            compra = Compra(cliente, autos_seleccionados, total_seguro)
             compras_registradas.append(compra)
-            console.print(f"[green]Compra registrada exitosamente! Total: Q{total:.2f}[/green]")
+            console.print(f"[green]Compra registrada exitosamente! Total: Q{total:.2f} (Incluye seguro: Q{total_seguro:.2f})[/green]")
             break
         else:
             console.print("[red]⚠️ Opción no válida. Por favor, seleccione una opción del submenú.[/red]")
@@ -156,6 +169,8 @@ def generar_reporte_compras():
         cliente = compra.cliente
         autos = compra.autos
         total_compra = sum(auto.precio_unitario for auto in autos)
+        total_seguro = compra.total_seguro
+        total_compra += total_seguro
 
         # Crear tabla para cada compra
         table = Table(title=f"Compra de {cliente.nombre}", title_justify="center", border_style="cyan")
@@ -171,6 +186,7 @@ def generar_reporte_compras():
             table.add_row(f"{auto.marca} {auto.modelo} ({auto.placa})", f"Q{auto.precio_unitario:.2f}")
         
         table.add_row("Total Compra", f"Q{total_compra:.2f}")
+        table.add_row("Incluye Seguro", f"Q{total_seguro:.2f}")
         total_general += total_compra
         
         console.print(table)
