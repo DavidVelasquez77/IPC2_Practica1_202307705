@@ -113,9 +113,16 @@ def realizar_compra():
     
     autos_seleccionados = []
     while True:
-        console.print("[cyan]Submenú de Compra[/cyan]")
-        console.print("[1] Agregar Auto")
-        console.print("[2] Terminar Compra y Generar Factura")
+        # Crear submenú con Rich
+        table = Table(title="🚗 Submenú de Compra 🚗", title_justify="center", border_style="cyan")
+        table.add_column("📌 Opción", style="yellow", justify="center")
+        table.add_column("Descripción", style="yellow", justify="left")
+        
+        table.add_row("[cyan]1[/cyan]", "[lightwhite]Agregar Auto[/lightwhite]")
+        table.add_row("[cyan]2[/cyan]", "[lightwhite]Terminar Compra y Generar Factura[/lightwhite]")
+        
+        console.print(table)
+        
         opcion = input("Seleccione una opción: ")
         
         if opcion == '1':
@@ -143,13 +150,63 @@ def realizar_compra():
         else:
             console.print("[red]⚠️ Opción no válida. Por favor, seleccione una opción del submenú.[/red]")
 
+def generar_reporte_compras():
+    total_general = 0
+    for compra in compras_registradas:
+        cliente = compra.cliente
+        autos = compra.autos
+        total_compra = sum(auto.precio_unitario for auto in autos)
+
+        # Crear tabla para cada compra
+        table = Table(title=f"Compra de {cliente.nombre}", title_justify="center", border_style="cyan")
+        table.add_column("Detalle", style="yellow", justify="left")
+        table.add_column("Valor", style="yellow", justify="right")
+        
+        table.add_row("Nombre", cliente.nombre)
+        table.add_row("Correo electrónico", cliente.correo_electronico)
+        table.add_row("NIT", cliente.nit)
+        table.add_row("Autos Adquiridos", "")
+        
+        for auto in autos:
+            table.add_row(f"{auto.marca} {auto.modelo} ({auto.placa})", f"Q{auto.precio_unitario:.2f}")
+        
+        table.add_row("Total Compra", f"Q{total_compra:.2f}")
+        total_general += total_compra
+        
+        console.print(table)
+    
+    # Crear panel para el total general
+    panel = Panel(
+        renderable=f"[bold]Total General: Q{total_general:.2f}[/bold]",
+        title="Resumen de Compras",
+        title_align="center",
+        border_style="green"
+    )
+    console.print(panel)
+
+def mostrar_datos_estudiante():
+    datos_estudiante = """
+    [bold]Nombre:[/bold] Josué David Velásquez Ixchop
+    [bold]Carnet:[/bold] 202307705
+    [bold]Carrera:[/bold] Ingeniería en Ciencias y Sistemas
+    [bold]Curso:[/bold] Introducción a la Programación de Computadoras 2
+    [bold]Sección:[/bold] A
+    """
+    panel = Panel(
+        renderable=datos_estudiante,
+        title="Datos del Estudiante",
+        title_align="center",
+        border_style="cyan"
+    )
+    console.print(panel)
+
 def ejecutar_opcion(opcion):
     opciones = {
         1: registrar_auto,
         2: registrar_cliente,
         3: realizar_compra,
-        4: "✨ Has seleccionado la Opción 4: Consultando ayuda...",
-        5: "✨ Has seleccionado la Opción 5: Datos del Estudiante:\nNombre: Josué David Velásquez Ixchop\nCarnet: 202307705\nCarrera: Ingeniería en Ciencias y Sistemas\nCurso: Introducción a la Programación de Computadoras 2\nSección: A",
+        4: generar_reporte_compras,
+        5: mostrar_datos_estudiante,
         6: "[red]❌ Saliendo del programa... ¡Hasta luego![/red]"
     }
     if opcion in opciones:
